@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function() {
 function compose_email() {
 
   // Declare variables for use later
-  const submit = document.querySelector('#submit');
   const mailRecipients = document.querySelector('#compose-recipients');
   const mailSubject = document.querySelector('#compose-subject');
   const mailBody = document.querySelector('#compose-body');
@@ -46,12 +45,11 @@ function compose_email() {
     })
     .then(response => response.json())
     .then(result => {
-      // Print result
-      console.log(result);
+     // Print result
+     console.log(result);
     });
+    
   }
-  // Load user's sent mailbox
-  load_mailbox('sent');
 }
 
 function load_mailbox(mailbox) {
@@ -62,5 +60,8 @@ function load_mailbox(mailbox) {
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+
+  // Get mail via GET
+ 
 }
 
