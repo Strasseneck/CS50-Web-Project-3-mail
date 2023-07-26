@@ -54,14 +54,37 @@ function compose_email() {
 
 function load_mailbox(mailbox) {
   
+  // log mailbox name
+  console.log(mailbox)
+  
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
 
   // Show the mailbox name
-  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)} </h3> <div class="heading-container" >  <h4> From </h4> <h4> Subject </h4> <h4> Received </h4> </div> <div class="flex-container" id="emails-container"> </div>`;
+
 
   // Get mail via GET
- 
+  fetch(`/emails/${mailbox}`)
+  .then(response => response.json())
+  .then(emails => {
+
+    // Print emails
+    console.log(emails);
+
+    // Loop through emails and populate mailbox HTML
+    emails.forEach(element => {
+      const emailSender = element.sender;
+      const emailSubject = element.subject;
+      const emailTime = element.timestamp;
+      const emailElement = document.createElement('div');
+      emailElement.id = "email-container"
+      emailElement.innerHTML = `<div class="email-header" id="email-sender"> ${emailSender} </div> <div class="email-header" id="email-subject"> ${emailSubject} </div> <div class="email-header" id="email-time"> ${emailTime} </div>`;
+      console.log(emailElement)
+      document.querySelector('#emails-container').append(emailElement)
+    });
+  });
+
 }
 
