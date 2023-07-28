@@ -120,17 +120,19 @@ function load_mailbox(mailbox) {
         emailElement.className = "table-secondary"
       }
 
-      emailElement.innerHTML =`<th scope="row">${rowCount}</th><td>${emailSender}</td><td>${emailSubject}</td><td>${emailTime}</td>`;
+      // Add innerHTML
+      emailElement.innerHTML =`<th scope="row">${rowCount}</th><td>${emailSender}</td><td>${emailSubject}</td><td>${emailTime}</td><td></td>`;
       console.log(emailElement);
       document.querySelector('#emails-table').append(emailElement);
       rowCount ++;
-
 
       // Add event listener for click to read mail
       document.querySelector(`#email-row-${emailId}`).addEventListener('click', () => {
         read_email(`${emailId}`);
       })
-      })
+
+    })
+     
   }) 
 } 
 
@@ -178,6 +180,7 @@ function read_email(mail) {
     const mailSubject = email.subject;
     const mailTime = email.timestamp;
     const mailBody = email.body;
+    const mailArchived = email.archived;
     const mailElement = document.createElement('tr');
 
     // Name elements populate html
@@ -188,8 +191,56 @@ function read_email(mail) {
     const mailBodyElement = document.createElement('div');
     mailBodyElement.id = "email-body-element";
     mailBodyElement.className ="card"
-    mailBodyElement.innerHTML = `<div class="card-body">${mailBody}</div>`;
+
+    // If not archived
+    console.log(mailArchived);
+    if (mailArchived == false) {
+    mailBodyElement.innerHTML = `<div class="card-body">${mailBody}<button type="button" id="button-archive-${mail}" class="btn btn-primary">Archive</button></div>`;
+    } else {
+      mailBodyElement.innerHTML = `<div class="card-body">${mailBody}<button type="button" id="button-unarchive-${mail}" class="btn btn-primary">Unarchive</button></div>`;
+    }
+    
+    // Add element to HTML
     document.querySelector('#email-view').append(mailBodyElement);
+
+    if (mailArchived == false) {
+      // Add event listener for archive button
+      document.querySelector(`#button-archive-${mail}`).addEventListener('click', () => {
+        archive_email(`${mail}`);
+      })} else {
+      // Add event listener for unarchive button
+      document.querySelector(`#button-unarchive-${mail}`).addEventListener('click', () => {
+        unarchive_email(`${mail}`);
+      })
+  }
   });
 }
 
+function archive_email(mail) {
+  // Log mail
+  console.log(mail);
+  console.log('archive');
+
+  // Mark as archived
+  fetch(`/emails/${mail}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+        archived: true
+    })
+  })
+  console.log('this mail has been archived')
+}
+
+function unarchive_email(mail) {
+  // Log mail
+  console.log(mail);
+  console.log('unarchive')
+
+  // Mark as archived
+  fetch(`/emails/${mail}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+        archived: false
+    })
+  })
+}
