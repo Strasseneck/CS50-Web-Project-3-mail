@@ -19,6 +19,7 @@ function compose_email() {
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
 
   // Clear out composition fields
@@ -45,25 +46,33 @@ function compose_email() {
     })
     .then(response => response.json())
     .then(result => {
-     // Print result
-     console.log(result);
-    });
     
+    // Print result
+    console.log(result)
+    });
   }
 }
 
 function load_mailbox(mailbox) {
   
   // log mailbox name
-  console.log(mailbox)
+  console.log(mailbox);
   
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
+  document.querySelector('#email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
 
-  // Show the mailbox name
-  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)} </h3> <div class="heading-container" >  <h4> From </h4> <h4> Subject </h4> <h4> Received </h4> </div> <div class="flex-container" id="emails-container"> </div>`;
 
+  if (mailbox == 'inbox') {
+
+  // Show the mailbox name and headers for Inbox
+  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)} </h3> <div class="heading-container" >  <h4> From </h4> <h4> Subject </h4> <h4> Received </h4> </div> <div class="flex-container" id="emails-container"> </div>`;
+  } else {
+
+  // Show the mailbox name and headers for Sent
+  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)} </h3> <div class="heading-container" >  <h4> To </h4> <h4> Subject </h4> <h4> Sent </h4> </div> <div class="flex-container" id="emails-container"> </div>`;
+  }
 
   // Get mail via GET
   fetch(`/emails/${mailbox}`)
@@ -78,13 +87,56 @@ function load_mailbox(mailbox) {
       const emailSender = element.sender;
       const emailSubject = element.subject;
       const emailTime = element.timestamp;
+      const emailId = element.id;
       const emailElement = document.createElement('div');
-      emailElement.id = "email-container"
-      emailElement.innerHTML = `<div class="email-header" id="email-sender"> ${emailSender} </div> <div class="email-header" id="email-subject"> ${emailSubject} </div> <div class="email-header" id="email-time"> ${emailTime} </div>`;
-      console.log(emailElement)
-      document.querySelector('#emails-container').append(emailElement)
-    });
-  });
+      emailElement.id = "email-container";
+      emailElement.innerHTML = `<div class="email-header" id="email-header"> ${emailSender} ${emailSubject} ${emailTime} <span hidden id="emailId">${emailId}</span></div>`;
+      console.log(emailElement);
+      document.querySelector('#emails-container').append(emailElement);
+      document.querySelector('#email-container').addEventListener('click', open_mail);  
+      })  
+   })
+  }
 
+function open_mail() {
+  // Get mail id from inner html call read_email
+  var id = document.querySelector('#emailId').innerHTML;
+      console.log(id);
+      read_email(id);
+} 
+
+function read_email(mail) {
+
+  // Log mailId
+  console.log('this is the mail:')
+  console.log(mail)
+
+  // Show email view and hide other views
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#email-view').style.display = 'block';
+  document.querySelector('#compose-view').style.display = 'none';
+
+  // Create mail container
+  document.querySelector('#email-view').innerHTML = '<div class="mail-container" id="mail-container"> </div>';
+  
+  // get mail via GET
+  fetch(`/emails/${mail}`)
+  .then(response => response.json())
+  .then(email => {
+    // Print email
+    console.log(email);
+
+    // Email data variables
+    const mailSender = email.subject;
+    const mailRecipients = email.recipients;
+    const mailSubject = email.subject;
+    const mailTime = email.timestamp;
+    const mailBody = email.body;
+    const mailElement = document.createElement('div');
+    mailElement.id = "mail-container";
+    mailElement.innerHTML = `<div class="mail-header" id="mail-sender"> ${mailSender} </div> <div class="mail-header" id="mail-recipients"></div> ${mailRecipients} <div class="mail-header" id="mail-subject"> ${mailSubject} </div> <div class="header" id="mail-time"> ${mailTime}</div> <div class="mail-body" id="mail-body"> ${mailBody} </div>`;
+    console.log(mailElement);
+    document.querySelector('#mail-container').append(mailElement);
+  });
 }
 
