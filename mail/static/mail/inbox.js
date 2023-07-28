@@ -63,15 +63,35 @@ function load_mailbox(mailbox) {
   document.querySelector('#email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
 
-
   if (mailbox == 'inbox') {
+    var rowCount = 0;
 
-  // Show the mailbox name and headers for Inbox
-  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)} </h3> <div class="heading-container" >  <h4> From </h4> <h4> Subject </h4> <h4> Received </h4> </div> <div class="flex-container" id="emails-container"> </div>`;
+  // Create emails table for inbox
+  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)} </h3>
+  <table class="table" id="emails-table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">From</th>
+      <th scope="col">Subject</th>
+      <th scope="col">Received</th>
+    </tr>
+  </thead>
+  <tbody>`;
   } else {
 
-  // Show the mailbox name and headers for Sent
-  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)} </h3> <div class="heading-container" >  <h4> To </h4> <h4> Subject </h4> <h4> Sent </h4> </div> <div class="flex-container" id="emails-container"> </div>`;
+  // Create emails table for sent
+  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)} </h3>
+  <table class="table" id="emails-table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">To</th>
+      <th scope="col">Subject</th>
+      <th scope="col">Sent</th>
+    </tr>
+  </thead>
+  <tbody>`;
   }
 
   // Get mail via GET
@@ -88,16 +108,26 @@ function load_mailbox(mailbox) {
       const emailSubject = element.subject;
       const emailTime = element.timestamp;
       const emailId = element.id;
-      const emailElement = document.createElement('div');
+      const emailElement = document.createElement('tr');
+      var emailRead = element.read;
+      
 
       // Add id containing unique emailId
-      emailElement.id = `email-container-${emailId}`;
-      emailElement.innerHTML = `<div class="email-header" id="email-header">${emailSender} ${emailSubject} ${emailTime}</div>`;
+      emailElement.id = `email-row-${emailId}`;
+
+      // If read make grey
+      if (emailRead == true) {
+        emailElement.className = "table-secondary"
+      }
+
+      emailElement.innerHTML =`<th scope="row">${rowCount}</th><td>${emailSender}</td><td>${emailSubject}</td><td>${emailTime}</td>`;
       console.log(emailElement);
-      document.querySelector('#emails-container').append(emailElement);
+      document.querySelector('#emails-table').append(emailElement);
+      rowCount ++;
+
 
       // Add event listener for click to read mail
-      document.querySelector(`#email-container-${emailId}`).addEventListener('click', () => {
+      document.querySelector(`#email-row-${emailId}`).addEventListener('click', () => {
         read_email(`${emailId}`);
       })
       })
@@ -123,7 +153,17 @@ function read_email(mail) {
   document.querySelector('#compose-view').style.display = 'none';
 
   // Create mail container
-  document.querySelector('#email-view').innerHTML = '<div class="mail-container" id="mail-container"></div>';
+  document.querySelector('#email-view').innerHTML = `<table class="table" id="email-table"><thead class="thead-dark">
+  <tr>
+     <th scope="col">#</th>
+     <th scope="col">From</th>
+     <th scope="col">Recipients</th>
+     <th scope="col">Subject</th>
+     <th scope="col">Received</th>
+   </tr>
+ </thead>
+ <tbody></tbody>`
+   
   
   // get mail via GET
   fetch(`/emails/${mail}`)
@@ -132,18 +172,24 @@ function read_email(mail) {
     // Print email
     console.log(email);
   
-
     // Email data variables
     const mailSender = email.subject;
     const mailRecipients = email.recipients;
     const mailSubject = email.subject;
     const mailTime = email.timestamp;
     const mailBody = email.body;
-    const mailElement = document.createElement('div');
-    mailElement.id = "mail-element";
-    mailElement.innerHTML = `<div class="mail-header"> <strong> From:  </strong>${mailSender}<strong> Recipients:  </strong>${mailRecipients}<strong> Subject:  </strong>${mailSubject}<strong> Time:  </strong>${mailTime}</div><div class="mail-body" id="mail-body"> ${mailBody}</div>`;
+    const mailElement = document.createElement('tr');
+
+    // Name elements populate html
+    mailElement.id = "email-row";
+    mailElement.innerHTML =`<th scope="row"></th><td>${mailSender}</td><td>${mailRecipients}</td><td>${mailSubject}</td><td>${mailTime}</td>`;
     console.log(mailElement);
-    document.querySelector('#mail-container').append(mailElement);
+    document.querySelector('#email-table').append(mailElement);
+    const mailBodyElement = document.createElement('div');
+    mailBodyElement.id = "email-body-element";
+    mailBodyElement.className ="card"
+    mailBodyElement.innerHTML = `<div class="card-body">${mailBody}</div>`;
+    document.querySelector('#email-view').append(mailBodyElement);
   });
 }
 
