@@ -89,10 +89,14 @@ function load_mailbox(mailbox) {
       const emailTime = element.timestamp;
       const emailId = element.id;
       const emailElement = document.createElement('div');
+
+      // Add id containing unique emailId
       emailElement.id = `email-container-${emailId}`;
       emailElement.innerHTML = `<div class="email-header" id="email-header">${emailSender} ${emailSubject} ${emailTime}</div>`;
       console.log(emailElement);
       document.querySelector('#emails-container').append(emailElement);
+
+      // Add event listener for click to read mail
       document.querySelector(`#email-container-${emailId}`).addEventListener('click', () => {
         read_email(`${emailId}`);
       })
@@ -104,6 +108,14 @@ function read_email(mail) {
 
   // Log mail
   console.log(mail)
+
+  // Mark as read
+  fetch(`/emails/${mail}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+        read: true
+    })
+  })
 
   // Show email view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
@@ -119,6 +131,7 @@ function read_email(mail) {
   .then(email => {
     // Print email
     console.log(email);
+  
 
     // Email data variables
     const mailSender = email.subject;
