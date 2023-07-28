@@ -6,8 +6,29 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
   document.querySelector('#compose').addEventListener('click', compose_email);
 
-  // By default, load the inbox
-  load_mailbox('inbox');
+  // Check local story for justSent item
+  if (!localStorage.getItem('justSent')) {
+
+    // If not set it to false
+    localStorage.setItem('justSent', false);
+
+  } else {
+    
+    console.log(justSent);
+    // Create justSent variable and check it
+    var justSent = localStorage.getItem('justSent');
+    if (justSent == true) {
+      
+      // if true set to false load sent
+      justSent = false;
+      load_mailbox('sent');
+    } else {
+
+      // load inbox as default when false
+      load_mailbox('inbox');
+    
+    }
+  }
 });
 
 function compose_email() {
@@ -49,8 +70,10 @@ function compose_email() {
     
     // Print result
     console.log(result)
+    justSent = true;
     });
   }
+  
 }
 
 function load_mailbox(mailbox) {
@@ -155,16 +178,7 @@ function read_email(mail) {
   document.querySelector('#compose-view').style.display = 'none';
 
   // Create mail container
-  document.querySelector('#email-view').innerHTML = `<table class="table" id="email-table"><thead class="thead-dark">
-  <tr>
-     <th scope="col">#</th>
-     <th scope="col">From</th>
-     <th scope="col">Recipients</th>
-     <th scope="col">Subject</th>
-     <th scope="col">Received</th>
-   </tr>
- </thead>
- <tbody></tbody>`
+  document.querySelector('#email-view').innerHTML = '<div class="mail-container" id="mail-container"></div>'
    
   
   // get mail via GET
@@ -184,23 +198,29 @@ function read_email(mail) {
     const mailElement = document.createElement('tr');
 
     // Name elements populate html
-    mailElement.id = "email-row";
-    mailElement.innerHTML =`<th scope="row"></th><td>${mailSender}</td><td>${mailRecipients}</td><td>${mailSubject}</td><td>${mailTime}</td>`;
-    console.log(mailElement);
-    document.querySelector('#email-table').append(mailElement);
-    const mailBodyElement = document.createElement('div');
-    mailBodyElement.id = "email-body-element";
-    mailBodyElement.className ="card"
+    mailElement.id = "mail-header";
 
     // If not archived
     console.log(mailArchived);
     if (mailArchived == false) {
-    mailBodyElement.innerHTML = `<div class="card-body">${mailBody}<button type="button" id="button-archive-${mail}" class="btn btn-primary">Archive</button></div>`;
+      mailElement.innerHTML = `<div><strong>From: &nbsp</strong>${mailSender}</div><div><strong>To:&nbsp</strong>${mailRecipients}</div><div><strong>Subject&nbsp</strong> ${mailSubject}</div><div><strong> Timestamp:&nbsp</strong>${mailTime}</div><button type="button" id="button-reply-${mail}" class="btn btn-outline-primary">Reply</button><button type="button" id="button-archive-${mail}" class="btn btn-outline-primary">Archive</button>`;
     } else {
-      mailBodyElement.innerHTML = `<div class="card-body">${mailBody}<button type="button" id="button-unarchive-${mail}" class="btn btn-primary">Unarchive</button></div>`;
+      mailElement.innerHTML = `<div><strong>From: &nbsp</strong>${mailSender}</div><div><strong>To:&nbsp</strong>${mailRecipients}</div><div><strong>Subject&nbsp</strong> ${mailSubject}</div><div><strong> Timestamp:&nbsp</strong>${mailTime}</div><button type="button" id="button-reply-${mail}" class="btn btn-outline-primary">Reply</button><button type="button" id="button-unarchive-${mail}" class="btn btn-outline-primary">Unarchive</button>`;
+
     }
+
+    console.log(mailElement);
+
+    // Add new mail element to existing html
+    document.querySelector('#mail-container').append(mailElement);
+
+    // Create body HTML
+    const mailBodyElement = document.createElement('div');
+    mailBodyElement.id = "email-body-element";
+    mailBodyElement.className ="card"
+    mailBodyElement.innerHTML = `<p>${mailBody}</p>`
     
-    // Add element to HTML
+    // Add body element to HTML
     document.querySelector('#email-view').append(mailBodyElement);
 
     if (mailArchived == false) {
@@ -228,7 +248,7 @@ function archive_email(mail) {
         archived: true
     })
   })
-  console.log('this mail has been archived')
+  load_mailbox('inbox');
 }
 
 function unarchive_email(mail) {
@@ -243,4 +263,6 @@ function unarchive_email(mail) {
         archived: false
     })
   })
+  load_mailbox('inbox');
+
 }
