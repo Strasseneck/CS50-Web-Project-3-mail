@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
   document.querySelector('#compose').addEventListener('click', compose_email);
 
+
+  // Load inbox as default
+  load_mailbox('inbox');
+
 });
 
 function compose_email() {
@@ -24,6 +28,27 @@ function compose_email() {
   document.querySelector('#compose-recipients').value = '';
   document.querySelector('#compose-subject').value = '';
   document.querySelector('#compose-body').value = '';
+
+   // Check if it's a reply
+   if (localStorage.getItem('replyId')) {
+    mailId = localStorage.getItem('replyId');
+    console.log(mailId);
+    
+    // Get email via GET
+    fetch(`/emails/${mailId}`)
+    .then(response => response.json())
+    .then(email => {
+      console.log(email)
+      const replyRecipients = email.sender;
+      const replySubject = "Re:" + `${email.subject}`;
+      const replyBody = `On ${email.timestamp}, 12:00 AM ${email.sender} wrote: ${email.body}`
+      
+      // Populate email
+      document.querySelector('#compose-recipients').value = replyRecipients;
+      document.querySelector('#compose-subject').value = replySubject;
+      document.querySelector('#compose-body').value = replyBody;
+    })
+  }
 
   // Listen for submission of form
   document.querySelector('#compose-form').onsubmit = () => {
@@ -47,6 +72,7 @@ function compose_email() {
     
     // Print result
     console.log(result)
+    console.log('message seems to be sent')
     
     // Load sent
     load_mailbox('sent');
@@ -280,7 +306,15 @@ function read_email(mail) {
       document.querySelector(`#button-unarchive-${mail}`).addEventListener('click', () => {
         unarchive_email(`${mail}`);
       })
-  }
+      }
+
+      // Add event listener for reply
+      document.querySelector(`#button-reply-${mail}`).addEventListener('click', () => {
+        const replyId = mail
+        localStorage.setItem('replyId', replyId)
+        compose_email();
+      })
+
   });
 }
 
