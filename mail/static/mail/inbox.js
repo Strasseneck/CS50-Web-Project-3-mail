@@ -6,29 +6,6 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
   document.querySelector('#compose').addEventListener('click', compose_email);
 
-  // Check local story for justSent item
-  if (!localStorage.getItem('justSent')) {
-
-    // If not set it to false
-    localStorage.setItem('justSent', false);
-
-  } else {
-    
-    console.log(justSent);
-    // Create justSent variable and check it
-    var justSent = localStorage.getItem('justSent');
-    if (justSent == true) {
-      
-      // if true set to false load sent
-      justSent = false;
-      load_mailbox('sent');
-    } else {
-
-      // load inbox as default when false
-      load_mailbox('inbox');
-    
-    }
-  }
 });
 
 function compose_email() {
@@ -70,7 +47,9 @@ function compose_email() {
     
     // Print result
     console.log(result)
-    justSent = true;
+    
+    // Load sent
+    load_mailbox('sent');
     });
   }
   
@@ -86,35 +65,71 @@ function load_mailbox(mailbox) {
   document.querySelector('#email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
 
-  if (mailbox == 'inbox') {
+  switch (mailbox) {
+
+    // Inbox
+    case 'inbox':
+      mailbox == 'inbox';
+
+    // Initialize rowCount
     var rowCount = 0;
 
-  // Create emails table for inbox
-  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)} </h3>
-  <table class="table" id="emails-table">
-  <thead>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">From</th>
-      <th scope="col">Subject</th>
-      <th scope="col">Received</th>
-    </tr>
-  </thead>
-  <tbody>`;
-  } else {
+    // Create emails table for inbox
+    document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>
+    <table class="table" id="emails-table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">From</th>
+        <th scope="col">Subject</th>
+        <th scope="col">Received</th>
+      </tr>
+    </thead>
+    <tbody>`;
+    break;
 
-  // Create emails table for sent
-  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)} </h3>
-  <table class="table" id="emails-table">
-  <thead>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">To</th>
-      <th scope="col">Subject</th>
-      <th scope="col">Sent</th>
-    </tr>
-  </thead>
-  <tbody>`;
+    // Sent 
+  case 'sent':
+    mailbox == 'sent';
+
+    // Initialize rowCount
+    var rowCount = 0;
+
+    // Create emails table for sent
+    document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)} </h3>
+    <table class="table" id="emails-table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">To</th>
+        <th scope="col">Subject</th>
+        <th scope="col">Sent</th>
+      </tr>
+    </thead>
+    <tbody>`
+    break;
+
+    // Archive
+  case 'archive':
+    mailbox == 'archive';
+
+    // Initialize rowCount
+    var rowCount = 0;
+
+    // Create emails table for archive
+    document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)} </h3>
+    <table class="table" id="emails-table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Sender</th>
+        <th scope="col">Recipients</th>
+        <th scope="col">Subject</th>
+        <th scope="col">Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>`
+    break;
   }
 
   // Get mail via GET
@@ -128,6 +143,7 @@ function load_mailbox(mailbox) {
     // Loop through emails and populate mailbox HTML
     emails.forEach(element => {
       const emailSender = element.sender;
+      const emailRecipients = element.recipients;
       const emailSubject = element.subject;
       const emailTime = element.timestamp;
       const emailId = element.id;
@@ -143,11 +159,43 @@ function load_mailbox(mailbox) {
         emailElement.className = "table-secondary"
       }
 
-      // Add innerHTML
-      emailElement.innerHTML =`<th scope="row">${rowCount}</th><td>${emailSender}</td><td>${emailSubject}</td><td>${emailTime}</td><td></td>`;
-      console.log(emailElement);
-      document.querySelector('#emails-table').append(emailElement);
-      rowCount ++;
+      switch (mailbox) {
+        case 'inbox':
+
+          // Inbox
+          mailbox == 'inbox';
+
+          // Add innerHTML for inbox 
+          emailElement.innerHTML =`<th scope="row">${rowCount}</th><td>${emailSender}</td><td>${emailSubject}</td><td>${emailTime}</td><td></td>`;
+          console.log(emailElement);
+          document.querySelector('#emails-table').append(emailElement);
+          rowCount ++;
+          break;
+        
+        case 'sent':
+
+          // Sent
+          mailbox == 'sent';
+
+          // Add innerHTML for sent
+          emailElement.innerHTML =`<th scope="row">${rowCount}</th><td>${emailRecipients}</td><td>${emailSubject}</td><td>${emailTime}</td><td></td>`;
+          console.log(emailElement);
+          document.querySelector('#emails-table').append(emailElement);
+          rowCount ++;
+          break;
+
+        case 'archive':
+
+          // Archive
+          mailbox == 'archive';
+  
+        // Add innerHTML for archive
+          emailElement.innerHTML =`<th scope="row">${rowCount}</th><td>${emailSender}</td><td>${emailRecipients}<td>${emailSubject}</td><td>${emailTime}</td><td></td>`;
+          console.log(emailElement);
+          document.querySelector('#emails-table').append(emailElement);
+          rowCount ++;
+          break;
+      }
 
       // Add event listener for click to read mail
       document.querySelector(`#email-row-${emailId}`).addEventListener('click', () => {
@@ -189,7 +237,7 @@ function read_email(mail) {
     console.log(email);
   
     // Email data variables
-    const mailSender = email.subject;
+    const mailSender = email.sender;
     const mailRecipients = email.recipients;
     const mailSubject = email.subject;
     const mailTime = email.timestamp;
