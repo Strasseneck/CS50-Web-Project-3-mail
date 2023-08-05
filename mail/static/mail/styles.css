@@ -11,24 +11,11 @@ div {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    border-style: groove;
+    border-style: groove;   
 }
 
-#emails-container {
-    display: flex;
-    flex-direction: column;
-}
-
-.email-header {
-    margin: 2px;
-}
 
 .flex-container {
     display: flex;
 }
 
-.heading-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-}

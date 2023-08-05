@@ -6,18 +6,17 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
   document.querySelector('#compose').addEventListener('click', compose_email);
 
+  // Event listener for form
+  document.querySelector('#compose-form').addEventListener('submit', send_email);
 
   // Load inbox as default
   load_mailbox('inbox');
-
 });
 
 function compose_email() {
 
-  // Declare variables for use later
-  const mailRecipients = document.querySelector('#compose-recipients');
-  const mailSubject = document.querySelector('#compose-subject');
-  const mailBody = document.querySelector('#compose-body');
+  //Console log
+  console.log('compose');
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
@@ -47,39 +46,52 @@ function compose_email() {
       document.querySelector('#compose-recipients').value = replyRecipients;
       document.querySelector('#compose-subject').value = replySubject;
       document.querySelector('#compose-body').value = replyBody;
+
+      // Remove reply item
+      localStorage.removeItem(['replyId']);
     })
+  }
   }
 
-  // Listen for submission of form
-  document.querySelector('#compose-form').onsubmit = () => {
-    
-    // Get email content
-    const recipients = mailRecipients.value;
-    const subject = mailSubject.value;
-    const body = mailBody.value;
-    
-    // Send mail
-    fetch('/emails', {
-      method: 'POST',
-      body: JSON.stringify({
-        recipients: recipients,
-        subject: subject,
-        body: body
-      })
-    })
-    .then(response => response.json())
-    .then(result => {
-    
-    // Print result
-    console.log(result)
-    console.log('message seems to be sent')
-    
-    // Load sent
-    load_mailbox('sent');
-    });
-  }
+function send_email(event) {  
+
+  event.preventDefault();
   
-}
+  // Log
+  console.log('send email')
+
+  // Get values
+  const mailRecipients = document.querySelector('#compose-recipients').value;
+  const mailSubject = document.querySelector('#compose-subject').value;
+  const mailBody = document.querySelector('#compose-body').value;
+  console.log(`mail recipients: ${mailRecipients}`);
+
+  // Get email content
+  const recipients = mailRecipients;
+  const subject = mailSubject;
+  const body = mailBody;
+  
+  // Send mail
+  fetch('/emails', {
+    method: 'POST',
+    body: JSON.stringify({
+      recipients: recipients,
+      subject: subject,
+      body: body
+    })
+  })
+  .then(response => response.json())
+  .then(result => {
+  
+  // Print result
+  console.log(result)
+  console.log('message seems to be sent')
+
+  // Load sent
+  load_mailbox('sent');
+  });
+}  
+
 
 function load_mailbox(mailbox) {
   
@@ -117,6 +129,8 @@ function load_mailbox(mailbox) {
     // Sent 
   case 'sent':
     mailbox == 'sent';
+
+    console.log('loading Sent');
 
     // Initialize rowCount
     var rowCount = 0;
@@ -159,11 +173,13 @@ function load_mailbox(mailbox) {
   }
 
   // Get mail via GET
+  console.log('getting emails');
   fetch(`/emails/${mailbox}`)
   .then(response => response.json())
   .then(emails => {
 
     // Print emails
+    console.log(`fetch has been performed for ${mailbox}`);
     console.log(emails);
 
     // Loop through emails and populate mailbox HTML
@@ -202,6 +218,7 @@ function load_mailbox(mailbox) {
 
           // Sent
           mailbox == 'sent';
+          console.log('case sent');
 
           // Add innerHTML for sent
           emailElement.innerHTML =`<th scope="row">${rowCount}</th><td>${emailRecipients}</td><td>${emailSubject}</td><td>${emailTime}</td><td></td>`;
@@ -227,10 +244,10 @@ function load_mailbox(mailbox) {
       document.querySelector(`#email-row-${emailId}`).addEventListener('click', () => {
         read_email(`${emailId}`);
       })
-
-    })
-     
+    }) 
+  
   }) 
+  console.log(`reached end of ${mailbox}`);
 } 
 
 function read_email(mail) {
